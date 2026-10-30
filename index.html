@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Christmas Liquid Glass</title>
+<style>
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.liquid-glass-pure {
+  --r: 28px;            /* corner radius: set to half the height for a pill */
+  --a: 135deg;          /* light direction, follows your finger */
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  border-radius: var(--r);
+  overflow: hidden;
+
+  /* keeps WebView corners clean (no dark edge) */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+
+  /* almost clear body: glass is see-through, the edges do the work */
+  background: linear-gradient(160deg,
+    rgba(255,255,255,.015) 0%,
+    rgba(255,255,255,0) 50%,
+    rgba(255,255,255,.012) 100%);
+
+  backdrop-filter: blur(5px) saturate(115%);
+  -webkit-backdrop-filter: blur(5px) saturate(115%);
+
+  /* thin edge light only, no white glow in the middle */
+  box-shadow:
+    inset 0 4px 6px -5px rgba(255,255,255,.11),
+    inset 0 -4px 6px -5px rgba(255,255,255,.07),
+    inset 0 0 14px -5px rgba(255,255,255,.06);
+
+  transition: transform .5s cubic-bezier(.34,1.7,.5,1), background .3s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* refraction hint: faint cool and warm color fringes inside the edge,
+   plus a small highlight in the top-left corner */
+.liquid-glass-pure::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(110% 55% at 20% 0%, rgba(255,255,255,.03), transparent 55%);
+  box-shadow:
+    inset 5px 5px 9px -5px rgba(230,57,70,.26),
+    inset -5px -5px 9px -5px rgba(42,157,92,.26);
+  transition: opacity .3s;
+}
+
+/* icing outline: a thick cream piped edge, lighter on the side facing your finger */
+.liquid-glass-pure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;   /* icing thickness */
+  pointer-events: none;
+  background: linear-gradient(var(--a),
+    #fffdf6,
+    #efe3cf 30%,
+    #f4e9d6 66%,
+    #fffdf6);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+@supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
+  .liquid-glass-pure::after { display: none; }
+}
+
+/* press: squish, then spring back */
+.liquid-glass-pure:active,
+.liquid-glass-pure.p {
+  transform: scale(.965);
+  background: linear-gradient(160deg,
+    rgba(255,255,255,.03) 0%,
+    rgba(255,255,255,.005) 50%,
+    rgba(255,255,255,.02) 100%);
+}
+</style>
+</head>
+<body>
+
+<button class="liquid-glass-pure" type="button" aria-label="Christmas glass button"></button>
+
+<script>
+(function () {
+  var b = document.querySelector('.liquid-glass-pure');
+
+  /* rim light follows the finger */
+  function aim(e) {
+    var r = b.getBoundingClientRect();
+    b.style.setProperty('--a',
+      (Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2) * 180 / Math.PI + 90).toFixed(0) + 'deg');
+  }
+  b.addEventListener('pointerdown', function (e) { b.classList.add('p'); aim(e); });
+  b.addEventListener('pointermove', aim, { passive: true });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+    b.addEventListener(t, function () { b.classList.remove('p'); });
+  });
+
+  /* Optional real refraction (Chromium / Android WebView only).
+     A WebView can't see the native screen behind it, so there is nothing to bend
+     until the page has its own background. Call from native:
+       webView.evaluateJavascript("setGlassBackdrop('url(data:image/png;base64,...) center/cover')", null)
+     Pass a screenshot or any CSS background of the area behind the button. */
+  var chromium = /Chrome|Chromium|Edg/.test(navigator.userAgent) && !/OPR\/|Firefox/.test(navigator.userAgent);
+  var NS = 'http://www.w3.org/2000/svg', svg, ro;
+
+  function ramp(len, bz, c) {
+    var f = Math.min(.49, bz / len), s = '', i, t;
+    function col(x) { return c === 'r' ? 'rgb(' + x + ',0,0)' : 'rgb(0,0,' + x + ')'; }
+    for (i = 0; i <= 8; i++) { t = i / 8; s += "<stop offset='" + (t * f) + "' stop-color='" + col(Math.round(128 + 127 * Math.pow(1 - t, 2.4))) + "'/>"; }
+    s += "<stop offset='" + (1 - f) + "' stop-color='" + col(128) + "'/>";
+    for (i = 1; i <= 8; i++) { t = i / 8; s += "<stop offset='" + (1 - f + t * f) + "' stop-color='" + col(Math.round(128 - 128 * Math.pow(t, 2.4))) + "'/>"; }
+    return s;
+  }
+  function refract() {
+    var w = Math.round(b.offsetWidth), h = Math.round(b.offsetHeight);
+    if (w < 8 || h < 8) return;
+    var rad = Math.min(parseFloat(getComputedStyle(b).borderTopLeftRadius) || 28, h / 2, w / 2), bz = Math.min(w, h) * .42;
+    var m = "<svg xmlns='" + NS + "' width='" + w + "' height='" + h + "'><defs><clipPath id='k'><rect width='" + w + "' height='" + h + "' rx='" + rad + "'/></clipPath>" +
+      "<linearGradient id='x' x1='0' x2='1' y1='0' y2='0'>" + ramp(w, bz, 'r') + "</linearGradient>" +
+      "<linearGradient id='y' x1='0' x2='0' y1='0' y2='1'>" + ramp(h, bz, 'b') + "</linearGradient></defs>" +
+      "<g clip-path='url(#k)'><rect width='" + w + "' height='" + h + "' fill='rgb(0,128,0)'/>" +
+      "<rect width='" + w + "' height='" + h + "' fill='url(#x)' style='mix-blend-mode:screen'/>" +
+      "<rect width='" + w + "' height='" + h + "' fill='url(#y)' style='mix-blend-mode:screen'/></g></svg>";
+    if (!svg) {
+      svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('width', 0); svg.setAttribute('height', 0);
+      svg.style.cssText = 'position:absolute;pointer-events:none';
+      document.body.appendChild(svg);
+    }
+    /* three displacement passes with slightly different strength = colored edge fringes */
+    var sc = Math.max(30, Math.min(90, Math.min(w, h) * 1.1)), k = .06, fx = '',
+        mats = ['1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0', '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0', '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0'],
+        sg = [1 + k, 1, 1 - k];
+    mats.forEach(function (m, i) {
+      fx += '<feDisplacementMap in="SourceGraphic" in2="m" scale="' + (sc * sg[i]).toFixed(1) + '" xChannelSelector="R" yChannelSelector="B" result="d' + i + '"/>' +
+            '<feColorMatrix in="d' + i + '" type="matrix" values="' + m + '" result="c' + i + '"/>';
+    });
+    fx += '<feBlend in="c0" in2="c1" mode="screen" result="rg"/><feBlend in="rg" in2="c2" mode="screen"/>';
+    svg.innerHTML = '<filter id="lg" filterUnits="userSpaceOnUse" x="0" y="0" width="' + w + '" height="' + h + '" color-interpolation-filters="sRGB">' +
+      '<feImage x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="none" result="m" href="data:image/svg+xml,' + encodeURIComponent(m) + '"/>' +
+      fx + '</filter>';
+    b.style.backdropFilter = 'url(#lg) blur(3px) saturate(115%)';
+  }
+  window.setGlassBackdrop = function (css) {
+    document.body.style.setProperty('background', css, 'important');
+    if (!chromium) return;
+    try {
+      refract();
+      if (!ro && window.ResizeObserver) { ro = new ResizeObserver(refract); ro.observe(b); }
+    } catch (e) {}
+  };
+
+  /* The WebView does seem to see the page background behind the button, so bend it
+     automatically in Chromium. A flat color has nothing to bend: put a gradient,
+     shapes or your content behind the button and the edge will refract it. */
+  /* Self-test: load this page with #demo on the end of the URL. It paints stripes behind
+     the button. If the stripes bend at the button's edge, distortion works in your WebView. */
+  if (location.hash === '#demo') {
+    document.body.style.setProperty('background',
+      'repeating-linear-gradient(90deg,#ff4f87 0 14px,#fff 14px 28px,#2f6bff 28px 42px)', 'important');
+  }
+
+  if (chromium) {
+    try {
+      refract();
+      if (window.ResizeObserver) { ro = new ResizeObserver(refract); ro.observe(b); }
+    } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>
