@@ -18,8 +18,7 @@ html, body {
   --r: 28px;            /* corner radius: set to half the height for a pill */
   --a: 135deg;          /* light direction, follows your finger */
   --snow: 1;            /* snow drift size multiplier */
-  --flake: 1;           /* snowflake size multiplier */
-
+  
   position: relative;
   display: block;
   width: 100%;
@@ -199,7 +198,7 @@ html, body {
   }
 
   /* ---------- procedural snow: different on every button ----------
-     Each page load picks a random seed, so the drift, drips, piles and flakes all differ.
+     Each page load picks a random seed, so the drift, drips and piles all differ.
      To keep a row looking the same every time, load it with ?seed=<row number>
      (or call setSnowSeed(n) from native). */
   var fx = b.querySelector('.fx'), SNS = 'http://www.w3.org/2000/svg';
@@ -219,22 +218,13 @@ html, body {
     if (!fx || W < 40 || H < 20) return;
     var R = rng(seed), r = function (lo, hi) { return lo + (hi - lo) * R(); };
     var cs = getComputedStyle(b);
-    var S = parseFloat(cs.getPropertyValue('--snow')) || 1, F = parseFloat(cs.getPropertyValue('--flake')) || 1;
+    var S = parseFloat(cs.getPropertyValue('--snow')) || 1;
     var out = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#f4f7ff"/><stop offset="1" stop-color="#cdd7fa"/></linearGradient></defs>';
     var i, k;
 
     /* soft bokeh circles */
     for (i = Math.floor(r(0, 3)); i > 0; i--)
       out += '<circle cx="' + f(W * r(.1, .9)) + '" cy="' + f(H * r(.3, .7)) + '" r="' + f(H * r(.28, .45)) + '" fill="#fff" fill-opacity="' + f(r(.06, .12) * 100) / 100 + '"/>';
-
-    /* snowflakes: kept in the middle-right band, away from icons and text */
-    for (i = Math.floor(r(0, 3)); i > 0; i--) {
-      var sz = H * r(.5, .75) * F, sc = sz / 64, o = f(r(.5, .8) * 100) / 100;
-      out += '<g transform="translate(' + f(W * r(.56, .84) - sz / 2) + ' ' + f(H * r(.45, .78) - sz / 2) + ') rotate(' + f(r(0, 60)) + ' ' + f(sz / 2) + ' ' + f(sz / 2) + ') scale(' + f(sc * 100) / 100 + ')" opacity="' + o + '">' +
-        '<g fill="none" stroke="#eef6ff" stroke-width="2.6" stroke-linecap="round">';
-      for (k = 0; k < 6; k++) out += '<path transform="rotate(' + k * 60 + ' 32 32)" d="M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15"/>';
-      out += '</g><circle cx="32" cy="32" r="3.2" fill="#fff"/></g>';
-    }
 
     /* top drift: random lumps, with a few drips */
     var cap = H * .17 * S, pts = [], x = 0, last = -1e9;
