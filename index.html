@@ -17,7 +17,7 @@ html, body {
 .liquid-glass-pure {
   --r: 28px;            /* corner radius: set to half the height for a pill */
   --a: 135deg;          /* light direction, follows your finger */
-  --snow: .6;           /* snow drift size multiplier */
+  --snow: 1;            /* snow drift size multiplier */
   --flake: 1;           /* snowflake size multiplier */
 
   position: relative;
@@ -62,43 +62,16 @@ html, body {
   user-select: none;
 }
 
-/* snow: a thick puffy drift with drips along the top, small piles in the bottom corners.
-   --snow scales them (0.6 suits a bar about 80px tall). */
-.liquid-glass-pure::before {
-  content: "";
+/* snow is drawn by the script below (a fresh random shape for every button) */
+.liquid-glass-pure .fx {
   position: absolute;
   inset: 0;
   z-index: 2;
   border-radius: inherit;
+  overflow: hidden;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='30' viewBox='0 0 80 30'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='1' stop-color='rgb(205,215,250)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3Cpath d='M0,30Q6,10 28,9Q40,0 56,9Q74,12 80,30Z' fill='url(%23g)'/%3E%3Cpath d='M0,30Q6,10 28,9Q40,0 56,9Q74,12 80,30Z' fill='none' stroke='rgb(150,168,226)' stroke-opacity='.4' stroke-width='1.6'/%3E%3Cellipse cx='30' cy='13' rx='16' ry='3' fill='white'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='30' viewBox='0 0 80 30'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='1' stop-color='rgb(205,215,250)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg transform='translate(80,0) scale(-1,1)'%3E%3Cpath d='M0,30Q6,10 28,9Q40,0 56,9Q74,12 80,30Z' fill='url(%23g)'/%3E%3Cpath d='M0,30Q6,10 28,9Q40,0 56,9Q74,12 80,30Z' fill='none' stroke='rgb(150,168,226)' stroke-opacity='.4' stroke-width='1.6'/%3E%3Cellipse cx='30' cy='13' rx='16' ry='3' fill='white'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='44' viewBox='0 0 480 44'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='.55' stop-color='rgb(244,247,255)'/%3E%3Cstop offset='1' stop-color='rgb(205,215,250)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0,0H480V16Q470,26 452,18Q440,12 426,20Q414,38 402,34Q392,30 392,20Q376,10 356,19Q340,26 322,16Q304,8 286,18Q270,26 254,17Q238,9 220,19Q206,40 194,36Q184,32 184,22Q168,12 150,20Q132,27 114,17Q98,9 80,18Q60,28 44,18Q28,10 12,17Q4,20 0,16Z' fill='url(%23g)'/%3E%3Cpath d='M0,0H480V16Q470,26 452,18Q440,12 426,20Q414,38 402,34Q392,30 392,20Q376,10 356,19Q340,26 322,16Q304,8 286,18Q270,26 254,17Q238,9 220,19Q206,40 194,36Q184,32 184,22Q168,12 150,20Q132,27 114,17Q98,9 80,18Q60,28 44,18Q28,10 12,17Q4,20 0,16Z' fill='none' stroke='rgb(150,168,226)' stroke-opacity='.45' stroke-width='2'/%3E%3Cg fill='white' fill-opacity='.95'%3E%3Cellipse cx='70' cy='6' rx='46' ry='3.5'/%3E%3Cellipse cx='200' cy='5' rx='54' ry='3'/%3E%3Cellipse cx='330' cy='6' rx='48' ry='3.5'/%3E%3Cellipse cx='430' cy='6' rx='36' ry='3'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: no-repeat, no-repeat, repeat-x;
-  background-size:
-    calc(80px * var(--snow)) calc(30px * var(--snow)),
-    calc(80px * var(--snow)) calc(30px * var(--snow)),
-    calc(480px * var(--snow)) calc(44px * var(--snow));
-  background-position: 12px 100%, calc(100% - 12px) 100%, 0 0;
 }
-
-/* snowflakes and a couple of soft bokeh circles inside the glass */
-.liquid-glass-pure .fx {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: inherit;
-  pointer-events: none;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='rgb(238,246,255)' stroke-opacity='.85' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath transform='rotate(0 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(60 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(120 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(180 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(240 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(300 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='3.2' fill='white' fill-opacity='.9'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='rgb(238,246,255)' stroke-opacity='.85' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath transform='rotate(0 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(60 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(120 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(180 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(240 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(300 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='3.2' fill='white' fill-opacity='.9'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='rgb(238,246,255)' stroke-opacity='.85' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath transform='rotate(0 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(60 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(120 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(180 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(240 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3Cpath transform='rotate(300 32 32)' d='M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='3.2' fill='white' fill-opacity='.9'/%3E%3C/svg%3E"),
-    radial-gradient(circle closest-side, rgba(255,255,255,.16) 0 86%, rgba(255,255,255,.03) 100%),
-    radial-gradient(circle closest-side, rgba(255,255,255,.12) 0 86%, rgba(255,255,255,.02) 100%);
-  background-repeat: no-repeat;
-  background-size:
-    calc(30px * var(--flake)) calc(30px * var(--flake)),
-    calc(34px * var(--flake)) calc(34px * var(--flake)),
-    calc(18px * var(--flake)) calc(18px * var(--flake)),
-    58px 58px, 48px 48px;
-  background-position: 7% 62%, 90% 66%, 95% 34%, 16% 24%, 84% 40%;
-}
+.liquid-glass-pure .fx svg { display: block; width: 100%; height: 100%; }
 
 /* thin frosty rim that sweeps toward your finger */
 .liquid-glass-pure::after {
@@ -224,6 +197,78 @@ html, body {
       if (window.ResizeObserver) { ro = new ResizeObserver(refract); ro.observe(b); }
     } catch (e) {}
   }
+
+  /* ---------- procedural snow: different on every button ----------
+     Each page load picks a random seed, so the drift, drips, piles and flakes all differ.
+     To keep a row looking the same every time, load it with ?seed=<row number>
+     (or call setSnowSeed(n) from native). */
+  var fx = b.querySelector('.fx'), SNS = 'http://www.w3.org/2000/svg';
+  var sm = /seed=(\d+)/.exec(location.search + location.hash);
+  var seed = sm ? +sm[1] : Math.floor(Math.random() * 1e9);
+  function rng(a) {
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function f(n) { return Math.round(n * 10) / 10; }
+  function snow() {
+    var W = b.offsetWidth, H = b.offsetHeight;
+    if (!fx || W < 40 || H < 20) return;
+    var R = rng(seed), r = function (lo, hi) { return lo + (hi - lo) * R(); };
+    var cs = getComputedStyle(b);
+    var S = parseFloat(cs.getPropertyValue('--snow')) || 1, F = parseFloat(cs.getPropertyValue('--flake')) || 1;
+    var out = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#f4f7ff"/><stop offset="1" stop-color="#cdd7fa"/></linearGradient></defs>';
+    var i, k;
+
+    /* soft bokeh circles */
+    for (i = Math.floor(r(0, 3)); i > 0; i--)
+      out += '<circle cx="' + f(W * r(.1, .9)) + '" cy="' + f(H * r(.3, .7)) + '" r="' + f(H * r(.28, .45)) + '" fill="#fff" fill-opacity="' + f(r(.06, .12) * 100) / 100 + '"/>';
+
+    /* snowflakes: kept in the middle-right band, away from icons and text */
+    for (i = Math.floor(r(0, 3)); i > 0; i--) {
+      var sz = H * r(.5, .75) * F, sc = sz / 64, o = f(r(.5, .8) * 100) / 100;
+      out += '<g transform="translate(' + f(W * r(.56, .84) - sz / 2) + ' ' + f(H * r(.45, .78) - sz / 2) + ') rotate(' + f(r(0, 60)) + ' ' + f(sz / 2) + ' ' + f(sz / 2) + ') scale(' + f(sc * 100) / 100 + ')" opacity="' + o + '">' +
+        '<g fill="none" stroke="#eef6ff" stroke-width="2.6" stroke-linecap="round">';
+      for (k = 0; k < 6; k++) out += '<path transform="rotate(' + k * 60 + ' 32 32)" d="M32,32V4M32,13L24,6M32,13L40,6M32,21L26,15M32,21L38,15"/>';
+      out += '</g><circle cx="32" cy="32" r="3.2" fill="#fff"/></g>';
+    }
+
+    /* top drift: random lumps, with a few drips */
+    var cap = H * .17 * S, pts = [], x = 0, last = -1e9;
+    while (x < W) {
+      if (x > W * .05 && x < W * .95 && x - last > H * 2.4 && R() < .2) {
+        var dw = H * r(.11, .17), len = H * r(.2, .36) * S, b0 = cap * r(.8, 1.1);
+        pts.push([x - dw, b0], [x - dw * .5, b0 + len * .8], [x, b0 + len], [x + dw * .5, b0 + len * .8], [x + dw, b0]);
+        last = x; x += dw * 2 + H * r(.3, .6);
+      } else { pts.push([x, cap * r(.65, 1.2)]); x += H * r(.35, .75); }
+    }
+    pts.push([W, cap * r(.7, 1.1)]);
+    var d = 'M0,' + f(pts[0][1]);
+    for (i = 1; i < pts.length - 1; i++)
+      d += 'Q' + f(pts[i][0]) + ',' + f(pts[i][1]) + ' ' + f((pts[i][0] + pts[i + 1][0]) / 2) + ',' + f((pts[i][1] + pts[i + 1][1]) / 2);
+    d += 'L' + W + ',' + f(pts[pts.length - 1][1]) + 'L' + W + ',-2L0,-2Z';
+    out += '<path d="' + d + '" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".45" stroke-width="1.6"/>';
+    for (i = Math.floor(r(3, 6)); i > 0; i--)
+      out += '<ellipse cx="' + f(W * r(.05, .95)) + '" cy="' + f(cap * .28) + '" rx="' + f(H * r(.3, .8)) + '" ry="' + f(cap * .17) + '" fill="#fff" fill-opacity=".9"/>';
+
+    /* corner piles */
+    function pile(tx, w, h, flip) {
+      var g = flip ? 'translate(' + f(tx + w) + ' ' + f(H - h) + ') scale(-1 1)' : 'translate(' + f(tx) + ' ' + f(H - h) + ')';
+      return '<g transform="' + g + '"><path d="M0,' + f(h) + 'C' + f(w * .08) + ',' + f(h * .75) + ' ' + f(w * .12) + ',0 ' + f(w * .42) + ',0C' + f(w * .58) + ',' + f(-h * .1) + ' ' + f(w * .78) + ',' + f(h * .12) + ' ' + f(w * .88) + ',' + f(h * .5) + 'C' + f(w * .95) + ',' + f(h * .7) + ' ' + w + ',' + f(h * .85) + ' ' + f(w) + ',' + f(h) + 'Z" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".4" stroke-width="1.4"/>' +
+        '<ellipse cx="' + f(w * .4) + '" cy="' + f(h * .22) + '" rx="' + f(w * .22) + '" ry="' + f(h * .1) + '" fill="#fff" fill-opacity=".9"/></g>';
+    }
+    var pw = Math.min(W * .17, H * 2.4);
+    out += pile(W * r(.015, .05), pw * r(.75, 1.1), H * r(.2, .34) * S, false);
+    if (R() < .75) out += pile(W * r(.015, .05), pw * r(.6, .95), H * r(.18, .3) * S, true);
+
+    fx.innerHTML = '<svg xmlns="' + SNS + '" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">' + out + '</svg>';
+  }
+  window.setSnowSeed = function (n) { seed = n >>> 0; snow(); };
+  snow();
+  if (window.ResizeObserver) new ResizeObserver(snow).observe(b);
 })();
 </script>
 </body>
