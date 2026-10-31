@@ -217,42 +217,41 @@ html, body {
     var W = b.offsetWidth, H = b.offsetHeight;
     if (!fx || W < 40 || H < 20) return;
     var R = rng(seed), r = function (lo, hi) { return lo + (hi - lo) * R(); };
-    var cs = getComputedStyle(b);
-    var S = parseFloat(cs.getPropertyValue('--snow')) || 1;
+    var S = parseFloat(getComputedStyle(b).getPropertyValue('--snow')) || 1;
+    /* every size below is in real pixels (not a share of the button), so shapes keep
+       the same proportions on a short row, a tall row, or a wide bar */
     var out = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#f4f7ff"/><stop offset="1" stop-color="#cdd7fa"/></linearGradient></defs>';
-    var i, k;
+    var i;
 
-    /* soft bokeh circles */
-    for (i = Math.floor(r(0, 3)); i > 0; i--)
-      out += '<circle cx="' + f(W * r(.1, .9)) + '" cy="' + f(H * r(.3, .7)) + '" r="' + f(H * r(.28, .45)) + '" fill="#fff" fill-opacity="' + f(r(.06, .12) * 100) / 100 + '"/>';
-
-    /* top drift: random lumps, with a few drips */
-    var cap = H * .17 * S, pts = [], x = 0, last = -1e9;
+    /* top drift: thickness rolls up and down in big soft waves plus small lumps;
+       each button gets its own thickness, wave size and number of drips */
+    var cap = r(7, 11) * S, wl = r(50, 130), ph = r(0, 6.3), amp = r(.2, .45);
+    var gap = r(55, 120), pts = [], x = 0, last = -1e9;
+    function thick(px) { return cap * (1 + amp * Math.sin(px / wl + ph)) * r(.85, 1.2); }
     while (x < W) {
-      if (x > W * .05 && x < W * .95 && x - last > H * 2.4 && R() < .2) {
-        var dw = H * r(.11, .17), len = H * r(.2, .36) * S, b0 = cap * r(.8, 1.1);
-        pts.push([x - dw, b0], [x - dw * .5, b0 + len * .8], [x, b0 + len], [x + dw * .5, b0 + len * .8], [x + dw, b0]);
-        last = x; x += dw * 2 + H * r(.3, .6);
-      } else { pts.push([x, cap * r(.65, 1.2)]); x += H * r(.35, .75); }
+      if (x > 16 && x < W - 16 && x - last > gap && R() < .25) {
+        var dw = r(3.5, 6.5), len = r(7, 15) * S, b0 = thick(x);
+        pts.push([x - dw * 1.4, b0], [x - dw * .6, b0 + len * .75], [x, b0 + len], [x + dw * .6, b0 + len * .75], [x + dw * 1.4, b0]);
+        last = x; gap = r(55, 120); x += dw * 2.8 + r(6, 16);
+      } else { pts.push([x, thick(x)]); x += r(9, 22); }
     }
-    pts.push([W, cap * r(.7, 1.1)]);
+    pts.push([W, thick(W)]);
     var d = 'M0,' + f(pts[0][1]);
     for (i = 1; i < pts.length - 1; i++)
       d += 'Q' + f(pts[i][0]) + ',' + f(pts[i][1]) + ' ' + f((pts[i][0] + pts[i + 1][0]) / 2) + ',' + f((pts[i][1] + pts[i + 1][1]) / 2);
     d += 'L' + W + ',' + f(pts[pts.length - 1][1]) + 'L' + W + ',-2L0,-2Z';
     out += '<path d="' + d + '" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".45" stroke-width="1.6"/>';
     for (i = Math.floor(r(3, 6)); i > 0; i--)
-      out += '<ellipse cx="' + f(W * r(.05, .95)) + '" cy="' + f(cap * .28) + '" rx="' + f(H * r(.3, .8)) + '" ry="' + f(cap * .17) + '" fill="#fff" fill-opacity=".9"/>';
+      out += '<ellipse cx="' + f(r(10, W - 10)) + '" cy="' + f(cap * .3) + '" rx="' + f(r(10, 28)) + '" ry="' + f(cap * .17) + '" fill="#fff" fill-opacity=".9"/>';
 
-    /* corner piles */
+    /* corner piles: small rounded mounds, about 2.5 times wider than tall */
     function pile(tx, w, h, flip) {
       var g = flip ? 'translate(' + f(tx + w) + ' ' + f(H - h) + ') scale(-1 1)' : 'translate(' + f(tx) + ' ' + f(H - h) + ')';
-      return '<g transform="' + g + '"><path d="M0,' + f(h) + 'C' + f(w * .08) + ',' + f(h * .75) + ' ' + f(w * .12) + ',0 ' + f(w * .42) + ',0C' + f(w * .58) + ',' + f(-h * .1) + ' ' + f(w * .78) + ',' + f(h * .12) + ' ' + f(w * .88) + ',' + f(h * .5) + 'C' + f(w * .95) + ',' + f(h * .7) + ' ' + w + ',' + f(h * .85) + ' ' + f(w) + ',' + f(h) + 'Z" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".4" stroke-width="1.4"/>' +
-        '<ellipse cx="' + f(w * .4) + '" cy="' + f(h * .22) + '" rx="' + f(w * .22) + '" ry="' + f(h * .1) + '" fill="#fff" fill-opacity=".9"/></g>';
+      return '<g transform="' + g + '"><path d="M0,' + f(h) + 'C' + f(w * .08) + ',' + f(h * .7) + ' ' + f(w * .14) + ',0 ' + f(w * .42) + ',0C' + f(w * .6) + ',' + f(-h * .08) + ' ' + f(w * .8) + ',' + f(h * .15) + ' ' + f(w * .9) + ',' + f(h * .5) + 'C' + f(w * .96) + ',' + f(h * .72) + ' ' + f(w) + ',' + f(h * .85) + ' ' + f(w) + ',' + f(h) + 'Z" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".4" stroke-width="1.4"/>' +
+        '<ellipse cx="' + f(w * .4) + '" cy="' + f(h * .24) + '" rx="' + f(w * .2) + '" ry="' + f(h * .1) + '" fill="#fff" fill-opacity=".9"/></g>';
     }
-    var pw = Math.min(W * .17, H * 2.4);
-    out += pile(W * r(.015, .05), pw * r(.75, 1.1), H * r(.2, .34) * S, false);
-    if (R() < .75) out += pile(W * r(.015, .05), pw * r(.6, .95), H * r(.18, .3) * S, true);
+    if (R() < .85) out += pile(r(4, 14), r(22, 36) * S, r(9, 14) * S, R() < .5);
+    if (R() < .6) out += pile(W - r(26, 50), r(22, 36) * S, r(9, 14) * S, R() < .5);
 
     fx.innerHTML = '<svg xmlns="' + SNS + '" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">' + out + '</svg>';
   }
