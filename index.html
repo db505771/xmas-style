@@ -242,13 +242,23 @@ html, body {
       return [cx + rad * Math.cos(a), cy + rad * Math.sin(a), -Math.cos(a), -Math.sin(a)];
     }
 
-    /* snow outline: thicker on top, thin underneath, with soft waves and lumps. No drips. */
-    var base = r(3.5, 5.5) * S, wl = r(40, 110), ph = r(0, 6.3), amp = r(.2, .4), pts = [], s = 0, p, th;
+    /* snow outline: deliberately uneven. Three waves of different sizes, a few big clumps
+       where snow piled up, thin patches in between, and jittered spacing. No drips. */
+    var base = r(2.6, 4) * S, pts = [], s = 0, p, th, c, ds, j;
+    var w1 = r(22, 55), w2 = r(70, 160), w3 = r(180, 420), p1 = r(0, 6.3), p2 = r(0, 6.3), p3 = r(0, 6.3);
+    var a1 = r(.25, .4), a2 = r(.2, .35), a3 = r(.15, .3), clumps = [];
+    for (i = Math.round(r(3, 7)); i > 0; i--) clumps.push([r(0, L), r(12, 40), r(3, 7) * S]);
     while (s < L) {
       p = at(s);
-      th = base * (1 + amp * Math.sin(s / wl + ph)) * Math.max(.55, .8 + .4 * p[3]) * r(.88, 1.12);
-      pts.push([p[0] + p[2] * th, p[1] + p[3] * th]);
-      s += r(7, 15);
+      th = base * (1 + a1 * Math.sin(s / w1 + p1) + a2 * Math.sin(s / w2 + p2) + a3 * Math.sin(s / w3 + p3)) * Math.max(.45, .8 + .45 * p[3]);
+      for (j = 0; j < clumps.length; j++) {
+        c = clumps[j]; ds = Math.abs(s - c[0]); ds = Math.min(ds, L - ds);
+        th += c[2] * Math.exp(-(ds * ds) / (c[1] * c[1])) * Math.max(.5, .8 + .4 * p[3]);
+      }
+      th = Math.max(1.1, th * r(.78, 1.22));
+      var jit = r(-1.6, 1.6);            /* slide the point along the edge a little */
+      pts.push([p[0] + p[2] * th - p[3] * jit, p[1] + p[3] * th + p[2] * jit]);
+      s += r(4, 16);
     }
     var n = pts.length, d = 'M' + f((pts[0][0] + pts[1][0]) / 2) + ',' + f((pts[0][1] + pts[1][1]) / 2);
     for (i = 1; i <= n; i++) {
