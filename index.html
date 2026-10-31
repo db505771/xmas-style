@@ -213,6 +213,11 @@ html, body {
     };
   }
   function f(n) { return Math.round(n * 10) / 10; }
+  /* Where your text sits, as a share of the width (left, right). Drips stay out of this zone
+     and the drift is thinner over it, so white text doesn't vanish into white snow.
+     Change it from native with setSnowTextZone(0.08, 0.62). */
+  var zone = [.07, .62];
+  window.setSnowTextZone = function (l, r) { zone = [l, r]; snow(); };
   function snow() {
     var W = b.offsetWidth, H = b.offsetHeight;
     if (!fx || W < 40 || H < 20) return;
@@ -220,16 +225,17 @@ html, body {
     var S = parseFloat(getComputedStyle(b).getPropertyValue('--snow')) || 1;
     /* every size below is in real pixels (not a share of the button), so shapes keep
        the same proportions on a short row, a tall row, or a wide bar */
-    var out = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#f4f7ff"/><stop offset="1" stop-color="#cdd7fa"/></linearGradient></defs>';
+    var out = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f9ff"/><stop offset=".5" stop-color="#dfe6ff"/><stop offset="1" stop-color="#a9b9ee"/></linearGradient></defs>';
     var i;
 
     /* top drift: thickness rolls up and down in big soft waves plus small lumps;
        each button gets its own thickness, wave size and number of drips */
-    var cap = r(7, 11) * S, wl = r(50, 130), ph = r(0, 6.3), amp = r(.2, .45);
+    var cap = r(6, 9) * S, wl = r(50, 130), ph = r(0, 6.3), amp = r(.15, .3);
+    function inText(px) { return px > W * zone[0] && px < W * zone[1]; }
     var gap = r(55, 120), pts = [], x = 0, last = -1e9;
-    function thick(px) { return cap * (1 + amp * Math.sin(px / wl + ph)) * r(.85, 1.2); }
+    function thick(px) { return Math.min(cap * 1.5, cap * (1 + amp * Math.sin(px / wl + ph)) * r(.85, 1.15)) * (inText(px) ? .8 : 1); }
     while (x < W) {
-      if (x > 16 && x < W - 16 && x - last > gap && R() < .25) {
+      if (x > 16 && x < W - 16 && !inText(x) && x - last > gap && R() < .3) {
         var dw = r(3.5, 6.5), len = r(7, 15) * S, b0 = thick(x);
         pts.push([x - dw * 1.4, b0], [x - dw * .6, b0 + len * .75], [x, b0 + len], [x + dw * .6, b0 + len * .75], [x + dw * 1.4, b0]);
         last = x; gap = r(55, 120); x += dw * 2.8 + r(6, 16);
@@ -242,7 +248,7 @@ html, body {
     d += 'L' + W + ',' + f(pts[pts.length - 1][1]) + 'L' + W + ',-2L0,-2Z';
     out += '<path d="' + d + '" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".45" stroke-width="1.6"/>';
     for (i = Math.floor(r(3, 6)); i > 0; i--)
-      out += '<ellipse cx="' + f(r(10, W - 10)) + '" cy="' + f(cap * .3) + '" rx="' + f(r(10, 28)) + '" ry="' + f(cap * .17) + '" fill="#fff" fill-opacity=".9"/>';
+      out += '<ellipse cx="' + f(r(10, W - 10)) + '" cy="' + f(cap * .3) + '" rx="' + f(r(10, 28)) + '" ry="' + f(cap * .17) + '" fill="#fff" fill-opacity=".8"/>';
 
     /* corner piles: small rounded mounds, about 2.5 times wider than tall */
     function pile(tx, w, h, flip) {
@@ -250,8 +256,8 @@ html, body {
       return '<g transform="' + g + '"><path d="M0,' + f(h) + 'C' + f(w * .08) + ',' + f(h * .7) + ' ' + f(w * .14) + ',0 ' + f(w * .42) + ',0C' + f(w * .6) + ',' + f(-h * .08) + ' ' + f(w * .8) + ',' + f(h * .15) + ' ' + f(w * .9) + ',' + f(h * .5) + 'C' + f(w * .96) + ',' + f(h * .72) + ' ' + f(w) + ',' + f(h * .85) + ' ' + f(w) + ',' + f(h) + 'Z" fill="url(#sg)" stroke="#96a8e2" stroke-opacity=".4" stroke-width="1.4"/>' +
         '<ellipse cx="' + f(w * .4) + '" cy="' + f(h * .24) + '" rx="' + f(w * .2) + '" ry="' + f(h * .1) + '" fill="#fff" fill-opacity=".9"/></g>';
     }
-    if (R() < .85) out += pile(r(4, 14), r(22, 36) * S, r(9, 14) * S, R() < .5);
-    if (R() < .6) out += pile(W - r(26, 50), r(22, 36) * S, r(9, 14) * S, R() < .5);
+    if (R() < .8) out += pile(r(1, 6), r(16, 24) * S, r(7, 11) * S, R() < .5);
+    if (R() < .7) out += pile(W - r(24, 44), r(20, 32) * S, r(8, 13) * S, R() < .5);
 
     fx.innerHTML = '<svg xmlns="' + SNS + '" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">' + out + '</svg>';
   }
